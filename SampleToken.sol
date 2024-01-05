@@ -102,6 +102,8 @@ contract SampleTokenSale {
         require(tokenContract.transfer(msg.sender, _numberOfTokens));
         emit Sell(msg.sender, _numberOfTokens);
         tokensSold += _numberOfTokens;
+        tokenContract.approve(msg.sender, _numberOfTokens);
+        // in schimbul ether-ului cheltuit, clientului ii vor fi aprobate cheltuirea numarului de monede cumparate
     }
 
     function endSale() public {
