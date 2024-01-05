@@ -8,6 +8,8 @@ contract SampleToken {
     string public symbol = "TOK";
 
     uint256 public totalSupply;
+
+    uint8 public decimals = 8; // the token will be devided by 10^(decimals)
     
     event Transfer(address indexed _from,
                    address indexed _to,
@@ -26,9 +28,28 @@ contract SampleToken {
         emit Transfer(address(0), msg.sender, totalSupply);
     }
 
+    function token_name() public view returns (string memory){
+        return name;
+    }
+
+    function token_symbol() public view returns (string memory){
+        return symbol;
+    }
+
+    function token_decimals() public view returns (uint8){
+        return decimals;
+    }
+
+    function total_supply() public view returns (uint256){
+        return totalSupply;
+    }
+
+    function balance_of(address _owner) public view returns (uint256){
+        return balanceOf[_owner];
+    }
 
     function transfer(address _to, uint256 _value) public returns (bool success) {
-        require(balanceOf[msg.sender] >= _value);
+        require(balanceOf[msg.sender] >= _value, "Insufficient funds!");
 
         emit Transfer(msg.sender, _to, _value);
         balanceOf[msg.sender] -= _value;
@@ -52,6 +73,10 @@ contract SampleToken {
         balanceOf[_to] += _value;
         allowance[_from][msg.sender] -= _value;
         return true;
+    }
+
+    function allowance_left(address _owner, address _spender) public view returns (uint256){
+        return allowance[_owner][_spender];
     }
 }
 
