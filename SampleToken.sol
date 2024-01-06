@@ -96,10 +96,25 @@ contract SampleTokenSale {
         tokenPrice = _tokenPrice;
     }
 
+    // modificarea pretului de vanzare fixat la instantierea contractului 
+    function updatePrice(uint _tokenPrice) external {
+        require(msg.sender == owner, "not allowed to change price");
+        tokenPrice = _tokenPrice;
+    }
+
     function buyTokens(uint256 _numberOfTokens) public payable {
-        require(msg.value == _numberOfTokens * tokenPrice);
+        // >= instead of ==
+        require(msg.value >= _numberOfTokens * tokenPrice);
+        // allowance
+        require(tokenContract.allowance_left(owner, address(this)) >= _numberOfTokens);
         require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
-        require(tokenContract.transfer(msg.sender, _numberOfTokens));
+        require(tokenContract.transferFrom(owner, msg.sender, _numberOfTokens));
+
+        // restul este returnat 
+        if (msg.value - _numberOfTokens * tokenPrice > 0){
+            payable(msg.sender).transfer(msg.value - _numberOfTokens * tokenPrice);
+        }
+        
         emit Sell(msg.sender, _numberOfTokens);
         tokensSold += _numberOfTokens;
         tokenContract.approve(msg.sender, _numberOfTokens);
