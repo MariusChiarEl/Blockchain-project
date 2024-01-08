@@ -2,12 +2,15 @@
 pragma solidity ^0.8.0;
 
 import './ProductDeposit.sol';
+import './SampleToken.sol';
 
 contract ProductIdentification{
     address payable public admin;
     uint public registrationFee;
     uint id = 0;
+     SampleToken public tokenContract;
     event fallbackCall(string);
+    
 
     struct Producer {
         address producerAddress;
@@ -24,8 +27,9 @@ contract ProductIdentification{
     mapping (address => Producer) registeredProducers; // contains the data of each producer based on their address
 	mapping (uint => Product) public registeredProducts; // registeredProducts[id]
     
-    constructor() {
+    constructor(SampleToken _tokenContract) {
         admin = payable(msg.sender);
+        tokenContract = _tokenContract;
     }
 
     modifier onlyOwner() {
@@ -52,6 +56,15 @@ contract ProductIdentification{
         admin.transfer(registrationFee);
     }
 
+   // inregistrarea unui producator cu plata in token
+    function registerProducerWithTokens() public  {
+        //n am pus payable ca accepta doar tokens
+        require(tokenContract.allowance_left(msg.sender, address(this)) >= registrationFee, "Insufficient token allowance");
+        tokenContract.transferFrom(msg.sender, admin, registrationFee); // transfera token catre admin ca si taxsa de inregitsrare
+        //dupa ce transferul de tokens s a reusit, adresa producatorului este setata iar productsCount este initializat la zero
+        registeredProducers[msg.sender].producerAddress = msg.sender;
+        registeredProducers[msg.sender].productsCount = 0;
+    }
 
     // Inregistrarea unui produs ce va putea fi facuta doar de catre unul dintre producatorii inregistrat (isProducerRegistered)
     // Un producator poate inregistra mai multe produse, ce vor fi retinute pe baza unui id unic per produs 
@@ -66,6 +79,10 @@ contract ProductIdentification{
     function getBalance() view public returns (uint) {
       return address(this).balance;
   }
+  //get the balance of tokens in the contract
+    function getTokenBalance() view public returns (uint) {
+        return tokenContract.balance_of(address(this));
+    }
 
       // Posibilitatea verificarii pe baza adresei unui producator daca acesta este inregistrat.
     // if is registeredProducers mapping
@@ -102,6 +119,8 @@ contract ProductIdentification{
         require(_producerAddress == getProducer(_productID), "not authorized to withdraw products"); // doar producatorul obiectului poate retrage produse
         registeredProducts[_productID].volume += _volume;
     }
+
+
 
     //Functie fallback
     fallback () external {
