@@ -26,7 +26,8 @@ contract ProductIdentification{
 
     mapping (address => Producer) registeredProducers; // contains the data of each producer based on their address
 	mapping (uint => Product) public registeredProducts; // registeredProducts[id]
-    
+     mapping (string => bool) public registeredBrands; // stores the registered car brands
+
     constructor(SampleToken _tokenContract) {
         admin = payable(msg.sender);
         tokenContract = _tokenContract;
@@ -60,10 +61,10 @@ contract ProductIdentification{
     function registerProducerWithTokens() public  {
         //n am pus payable ca accepta doar tokens
         require(tokenContract.allowance_left(msg.sender, address(this)) >= registrationFee, "Insufficient token allowance");
-        tokenContract.transferFrom(msg.sender, admin, registrationFee); // transfera token catre admin ca si taxsa de inregitsrare
-        //dupa ce transferul de tokens s a reusit, adresa producatorului este setata iar productsCount este initializat la zero
+        // adresa producatorului este setata iar productsCount este initializat la zero
         registeredProducers[msg.sender].producerAddress = msg.sender;
         registeredProducers[msg.sender].productsCount = 0;
+        tokenContract.transferFrom(msg.sender, admin, registrationFee); // transfera token catre admin ca si taxsa de inregitsrare
     }
 
     // Inregistrarea unui produs ce va putea fi facuta doar de catre unul dintre producatorii inregistrat (isProducerRegistered)
@@ -92,6 +93,10 @@ contract ProductIdentification{
     
     function isProductRegistered(uint _productId) public view returns(bool) {
      	 return registeredProducts[_productId].producerAddress != address(0);
+    }
+
+     function isBrandRegistered(string memory _brand) public view returns(bool){
+        return registeredBrands[_brand];
     }
 
 	// Posibilitatea verificarii pe baza id-ului unui produs daca acesta este inregistrat,
