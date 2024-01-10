@@ -66,7 +66,7 @@ contract MyAuction is Auction {
         Mycar.Brand = _brand;
         Mycar.Rnumber = _Rnumber;
 
-         tokenContract = SampleToken(_tokenContractAddress);
+        tokenContract = SampleToken(_tokenContractAddress);
     } 
     
     function get_owner() public view returns(address) {
@@ -81,17 +81,17 @@ contract MyAuction is Auction {
         
     }
     
-    function bid() public payable an_ongoing_auction override returns (bool) {
-     require(!hasBid[msg.sender], "You have already placed a bid.");
-        require(bids[msg.sender] + msg.value > highestBid,"You can't bid, Make a higher Bid");
+    function bid(uint bid_amount) public an_ongoing_auction returns (bool) {
+        require(!hasBid[msg.sender], "You have already placed a bid.");
+        require(bid_amount > highestBid,"You can't bid, Make a higher Bid");
         highestBidder = msg.sender;
-        highestBid = bids[msg.sender] + msg.value;
+        highestBid = bid_amount;
         bidders.push(msg.sender);
         bids[msg.sender] = highestBid;
           // marcheaza licitatorul ca fiind licitat 
-         hasBid[msg.sender] = true;  
+        hasBid[msg.sender] = true;  
         emit BidEvent(highestBidder,  highestBid);
-     tokenContract.transferFrom(msg.sender, address(this), msg.value);
+        tokenContract.transferFrom(msg.sender, address(this), bid_amount);
 
         return true;
     } 
@@ -145,5 +145,4 @@ contract MyAuction is Auction {
     
     } 
 }
-
 
