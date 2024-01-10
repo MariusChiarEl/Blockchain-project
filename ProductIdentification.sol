@@ -26,11 +26,11 @@ contract ProductIdentification{
 
     mapping (address => Producer) registeredProducers; // contains the data of each producer based on their address
 	mapping (uint => Product) public registeredProducts; // registeredProducts[id]
-     mapping (string => bool) public registeredBrands; // stores the registered car brands
+    mapping (string => bool) public registeredBrands; // stores the registered car brands
 
-    constructor(SampleToken _tokenContract) {
+    constructor(address _tokenContract) {
         admin = payable(msg.sender);
-        tokenContract = _tokenContract;
+        tokenContract = SampleToken(_tokenContract);
     }
 
     modifier onlyOwner() {
@@ -60,12 +60,13 @@ contract ProductIdentification{
    // inregistrarea unui producator cu plata in token
     function registerProducerWithTokens() public  {
         //n am pus payable ca accepta doar tokens
-        require(tokenContract.allowance_left(msg.sender, address(this)) >= registrationFee, "Insufficient token allowance");
+        // require(tokenContract.allowance_left(msg.sender, address(this)) >= registrationFee, "Insufficient token allowance");
         // adresa producatorului este setata iar productsCount este initializat la zero
         registeredProducers[msg.sender].producerAddress = msg.sender;
         registeredProducers[msg.sender].productsCount = 0;
         tokenContract.transferFrom(msg.sender, admin, registrationFee); // transfera token catre admin ca si taxsa de inregitsrare
     }
+
 
     // Inregistrarea unui produs ce va putea fi facuta doar de catre unul dintre producatorii inregistrat (isProducerRegistered)
     // Un producator poate inregistra mai multe produse, ce vor fi retinute pe baza unui id unic per produs 
@@ -74,15 +75,16 @@ contract ProductIdentification{
          // AM MODIFICAT ADRESA PRODUCATORULUI IN MSG.SENDER, DEOARECE PRODUCATORUL APELEAZA FUNCTIA
         require(isProducerRegistered(msg.sender),"Producer is not registered");
         registeredProducts[id] = Product(id, _name , msg.sender, _volume);
+        registeredBrands[_name] = true;
         id += 1;
     }
-
+    
     function getBalance() view public returns (uint) {
       return address(this).balance;
   }
   //get the balance of tokens in the contract
     function getTokenBalance() view public returns (uint) {
-        return tokenContract.balance_of(address(this));
+        return tokenContract.balance_of(msg.sender);
     }
 
       // Posibilitatea verificarii pe baza adresei unui producator daca acesta este inregistrat.
