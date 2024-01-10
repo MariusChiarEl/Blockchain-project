@@ -51,27 +51,29 @@ contract SampleToken {
     function transfer(address _to, uint256 _value) public returns (bool success) {
         require(balanceOf[msg.sender] >= _value, "Insufficient funds!");
 
-        emit Transfer(msg.sender, _to, _value);
+      
         balanceOf[msg.sender] -= _value;
         balanceOf[_to] += _value;
 
+        emit Transfer(msg.sender, _to, _value);
         return true;
     }
 
     function approve(address _spender, uint256 _value) public returns (bool success) {
+        allowance[msg.sender][_spender] = _value; 
         emit Approval(msg.sender, _spender, _value);
-        allowance[msg.sender][_spender] = _value;
         return true;
     }
 
     function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-        require(_value <= balanceOf[_from]);
-        require(_value <= allowance[_from][msg.sender]);
-
-        emit Transfer(_from, _to, _value);
+        require(_value <= balanceOf[_from], "don't have enough tokens");
+        require(_value <= allowance[_from][msg.sender], "not allowed to transfer this much tokens");
+       
         balanceOf[_from] -= _value;
         balanceOf[_to] += _value;
-        allowance[_from][msg.sender] -= _value;
+        allowance[_from][msg.sender] -= _value; 
+        
+        emit Transfer(_from, _to, _value);
         return true;
     }
 
@@ -106,8 +108,8 @@ contract SampleTokenSale {
         // >= instead of ==
         require(msg.value >= _numberOfTokens * tokenPrice);
         // allowance
-        require(tokenContract.allowance_left(owner, address(this)) >= _numberOfTokens);
-        require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
+        // require(tokenContract.allowance_left(owner, address(this)) >= _numberOfTokens);
+        // require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
         require(tokenContract.transferFrom(owner, msg.sender, _numberOfTokens));
 
         // restul este returnat 
@@ -117,7 +119,7 @@ contract SampleTokenSale {
         
         emit Sell(msg.sender, _numberOfTokens);
         tokensSold += _numberOfTokens;
-        tokenContract.approve(msg.sender, _numberOfTokens);
+        // tokenContract.approve(msg.sender, _numberOfTokens);
         // in schimbul ether-ului cheltuit, clientului ii vor fi aprobate cheltuirea numarului de monede cumparate
     }
 
