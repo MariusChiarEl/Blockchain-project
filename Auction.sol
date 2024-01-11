@@ -118,14 +118,15 @@ contract MyAuction is Auction {
     */
 
     function withdraw() public override returns (bool) {
-    require(block.timestamp > auction_end || STATE == auction_state.CANCELLED, "You can't withdraw, the auction is still open");
-    require(msg.sender!=highestBidder,"You are the winner, you can't withdraw!");
-    uint tokenAmount = bids[msg.sender];
-    bids[msg.sender] = 0;
-    emit WithdrawalEvent(msg.sender, tokenAmount);
-    tokenContract.transfer(msg.sender, tokenAmount);
+        require(block.timestamp > auction_end || STATE == auction_state.CANCELLED, "You can't withdraw, the auction is still open");
+        require(msg.sender!=highestBidder,"You are the winner, you can't withdraw!");
+        uint tokenAmount = bids[msg.sender];
+        bids[msg.sender] = 0;
 
-    return true;
+        tokenContract.transfer(msg.sender, tokenAmount);
+        emit WithdrawalEvent(msg.sender, tokenAmount);
+        
+        return true;
 }
     
     function destruct_auction() external only_owner returns (bool) {
@@ -134,8 +135,9 @@ contract MyAuction is Auction {
         for(uint i = 0; i < bidders.length; i++)
         {   
             if(bids[bidders[i]] != 0 && bidders[i]!=highestBidder)
-               { value_to_return=bids[bidders[i]];
-                 bids[bidders[i]]=0;
+               { 
+                value_to_return=bids[bidders[i]];
+                bids[bidders[i]]=0;
                 tokenContract.transferFrom(auction_owner,bidders[i],value_to_return);
                }
         }
