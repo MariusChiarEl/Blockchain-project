@@ -112,14 +112,14 @@ contract SampleTokenSale {
         // require(tokenContract.balanceOf(address(this)) >= _numberOfTokens);
         require(tokenContract.transferFrom(owner, msg.sender, _numberOfTokens));
 
+        emit Sell(msg.sender, _numberOfTokens);
+        tokensSold += _numberOfTokens;
+
         // restul este returnat 
         if (msg.value - _numberOfTokens * tokenPrice > 0){
             payable(msg.sender).transfer(msg.value - _numberOfTokens * tokenPrice);
         }
         
-        emit Sell(msg.sender, _numberOfTokens);
-        tokensSold += _numberOfTokens;
-        // tokenContract.approve(msg.sender, _numberOfTokens);
         // in schimbul ether-ului cheltuit, clientului ii vor fi aprobate cheltuirea numarului de monede cumparate
     }
 
